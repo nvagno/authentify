@@ -2,10 +2,12 @@ package app.esiroi.auth.endpoint.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,10 +24,15 @@ public class JWTAuthFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    String authHeader = request.getHeader("Authorization");
-
-    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-      String token = authHeader.substring(7);
+    var cookies = request.getCookies();
+    if (cookies != null) {
+      String token =
+          Arrays.stream(request.getCookies())
+              .filter(cookie -> "AUTH-TOKEN".equals(cookie.getName()))
+              .map(Cookie::getValue)
+              .findFirst()
+              .orElse(null);
+      ;
 
       if (jwtConf.validateToken(token)) {
         String email = jwtConf.extractEmail(token);
