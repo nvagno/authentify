@@ -10,9 +10,9 @@
 <div class="card">
     <h2>Register</h2>
 
-    <form th:action="@{/register}" method="post" >
-        <input type="email"  placeholder="Email" required>
-        <input type="password" placeholder="Password" required>
+    <form th:action="@{/register}" method="post" th:object="${user}">
+        <input type="email" th:field="${user.email}"  placeholder="Email" required>
+        <input type="password" th:field="${user.password}" placeholder="Password" required>
         <input type="password" placeholder="Confirm Password" required>
 
         <button type="submit">Create account</button>
@@ -23,6 +23,19 @@
         <a th:href="@{/}">Login</a>
     </p>
 </div>
+
+<script>
+    const form = document.querySelector("form");
+    const password = document.querySelector("input[name='password']");
+    const confirm = document.querySelector("input[name='confirmPassword']");
+
+    form.addEventListener("submit", function (e) {
+        if (password.value !== confirm.value) {
+            e.preventDefault();
+            alert("Passwords do not match");
+        }
+    });
+</script>
 
 </body>
 </html>
