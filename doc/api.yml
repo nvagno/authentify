@@ -7,7 +7,7 @@ servers:
   - url: 'http://localhost:8080'
 
 paths:
-  /v1/ping:
+  /ping:
     get:
       tags:
         - Health
@@ -28,7 +28,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Exception'
-  /v1/login:
+  /login:
     post:
       tags:
         - Security
@@ -54,7 +54,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/Exception'
 
-  /v1/validateOTP:
+  /register:
+    post:
+      tags:
+        - Security
+      summary: Create user
+      security: []
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthUser'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: Authenticated User
+        403:
+          description: Bad credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exception'
+
+  /validateOTP:
     post:
       tags:
         - Security
