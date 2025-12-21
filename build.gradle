@@ -1,0 +1,133 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.2.2'
+    id 'io.spring.dependency-management' version '1.1.3'
+
+	id 'org.asciidoctor.jvm.convert' version '4.0.5'
+    id 'org.openapi.generator' version '7.4.0'
+
+    id 'jacoco'
+    id "org.sonarqube" version "7.1.0.6387"
+}
+
+group = 'app.esiroi'
+version = '0.0.1-SNAPSHOT'
+description = 'Authenticator'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+    mavenLocal()
+	mavenCentral()
+}
+
+ext {
+	set('snippetsDir', file("build/generated-snippets"))
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+sonar {
+    properties {
+        property "sonar.java.source", "21"
+        property "sonar.java.target", "21"
+        property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
+    }
+}
+
+tasks.register('generateJavaClient', GenerateTask) {
+    generatorName = "java"
+    inputSpec = "$rootDir/doc/api.yml".toString()
+    outputDir = "$buildDir/gen".toString()
+    apiPackage = "app.esiroi.auth.endpoint.rest.api"
+    invokerPackage = "app.esiroi.auth.endpoint.rest.client"
+    modelPackage = "app.esiroi.auth.endpoint.rest.model"
+
+    configOptions = [
+            serializableModel   : "true",
+            serializationLibrary: "jackson",
+            dateLibrary         : "custom"
+    ]
+    typeMappings = [
+            // What date-time type to use when? https://i.stack.imgur.com/QPhGW.png
+            Date    : "java.time.LocalDate",
+            DateTime: "java.time.Instant",
+    ]
+    library = "native"
+
+    groupId = 'app.esiroi'
+    id = 'auth-gen'
+    skipValidateSpec = false
+    logToStderr = true
+    generateAliasAsModel = false
+    enablePostProcessFile = false
+}
+
+tasks.register('publishJavaClientToMavenLocal', Exec) {
+    dependsOn generateJavaClient
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        commandLine './.shell/publish_gen_to_maven_local.bat'
+    } else {
+        commandLine './.shell/publish_gen_to_maven_local.sh'
+    }
+}
+
+tasks.compileJava.dependsOn publishJavaClientToMavenLocal
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'commons-codec:commons-codec:1.16.0'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'app.esiroi:auth-gen:1.0.0'
+	implementation 'org.flywaydb:flyway-core'
+	compileOnly 'org.projectlombok:lombok'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	runtimeOnly 'org.postgresql:postgresql'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+    testImplementation 'com.h2database:h2'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation 'org.testcontainers:postgresql'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+
+tasks.named('test') {
+	outputs.dir snippetsDir
+	useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+tasks.named('asciidoctor') {
+	inputs.dir snippetsDir
+	dependsOn test
+}

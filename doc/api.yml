@@ -1,0 +1,109 @@
+openapi: 3.1.0
+info:
+  title: Authenticator API
+  description: TOTP Based authentication
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:8080'
+
+paths:
+  /v1/ping:
+    get:
+      tags:
+        - Health
+      summary: Check API health
+      operationId: ping
+      responses:
+        200:
+          description: API is working correctly
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: pong
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exception'
+  /v1/login:
+    post:
+      tags:
+        - Security
+      summary: Authenticate user with username and password
+      operationId: authenticateUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthUser'
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: Authenticated User
+        403:
+          description: Bad credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exception'
+
+  /v1/validateOTP:
+    post:
+      tags:
+        - Security
+      summary: Validate OTP
+      operationId: authenticateUser
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+              example: "123456"
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: Authenticated User
+        403:
+          description: Bad credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exception'
+components:
+  schemas:
+    AuthUser:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        otpValidationRequired:
+          type: boolean
+        accessToken:
+          type: string
+    Exception:
+      type: object
+      properties:
+        type:
+          type: string
+        message:
+          type: string
