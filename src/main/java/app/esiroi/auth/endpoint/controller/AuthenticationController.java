@@ -73,8 +73,12 @@ public class AuthenticationController {
 
   @PostMapping("/validateOTP")
   public String validate(@RequestParam("otp") String otp) {
-    service.validateOTP(otp);
-    return "redirect:/profile";
+    try {
+      service.validateOTP(otp);
+      return "redirect:/profile";
+    } catch (Exception e) {
+      return "redirect:/validateOTP";
+    }
   }
 
   private Cookie putTokenInCookie(String token) {

@@ -22,13 +22,25 @@
             width: 250px;
         }
 
-
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #4CAF50;
+            border: none;
+            color: white;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 <div class="profile-card">
     <h2>Scan</h2>
     <img th:src="'data:image/png;base64,' + ${qrCode}" alt="QR Code TOTP"/>
+    <form th:action="@{/logout}" method="post">
+        <button type="submit">Continue</button>
+    </form>
 </div>
 </body>
 </html>
