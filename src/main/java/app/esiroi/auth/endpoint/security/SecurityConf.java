@@ -70,6 +70,8 @@ public class SecurityConf {
                     .authenticated()
                     .requestMatchers(POST, "/validateOTP")
                     .authenticated()
+                    .requestMatchers(GET, "/qrcode")
+                    .permitAll()
                     .requestMatchers(GET, "/profile")
                     .authenticated()
                     .anyRequest()

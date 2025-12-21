@@ -5,14 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import app.esiroi.auth.ITestConfiguration;
 import app.esiroi.auth.model.User;
 import app.esiroi.auth.repository.UserRepository;
-import app.esiroi.auth.service.UserService;
+import app.esiroi.auth.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class UserServiceIT extends ITestConfiguration {
+public class AuthServiceIT extends ITestConfiguration {
   @Autowired UserRepository userRepository;
-  @Autowired UserService subject;
+  @Autowired AuthService subject;
 
   @BeforeEach
   void setUp() {
