@@ -1,2 +1,2 @@
-insert into "user" (id, email, password_hash, created_at)
-values ('user1_id', 'test@email.com', '$2a$10$CcZJSaZkR6zTx.BFNp37a.aFFR.NpOYy7PQwhYNEcBApCNY.gQDkW', '2024-01-10T12:30:00Z');
+insert into "user" (id, email, password_hash, otp_secret, created_at)
+values ('user1_id', 'test@email.com', '$2a$10$CcZJSaZkR6zTx.BFNp37a.aFFR.NpOYy7PQwhYNEcBApCNY.gQDkW','[85, -128, 76, -83, -54, 124, -105, -4, 34, 73, -118, -114, -81, 42, -1, -75, -96, 19, -42, 52, -48, 61, -5, -9, 80, -70, -76, -93, -52, 27, 109, -81]' , '2024-01-10T12:30:00Z');
