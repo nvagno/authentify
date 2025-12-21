@@ -54,32 +54,20 @@ public class AuthenticationController {
 
   @GetMapping("/validateOTP")
   public String validateOTP() {
-    try {
-      return "otp";
-    } catch (Exception e) {
-      return "index";
-    }
+    return "otp";
   }
 
   @GetMapping("/profile")
   public String profile(Model model) {
     var email = AuthProvider.getAuthenticatedUserEmail();
     model.addAttribute("email", email);
-    try {
-      return "profile";
-    } catch (Exception e) {
-      return "index";
-    }
+    return "profile";
   }
 
   @PostMapping("/validateOTP")
   public String validate(@RequestParam("otp") String otp) {
     service.validateOTP(otp);
-    try {
-      return "redirect:/profile";
-    } catch (Exception e) {
-      return "otp";
-    }
+    return "redirect:/profile";
   }
 
   private Cookie putTokenInCookie(String token) {
