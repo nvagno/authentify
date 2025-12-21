@@ -3,7 +3,7 @@ package app.esiroi.auth.endpoint.controller;
 import app.esiroi.auth.endpoint.mapper.UserRestMapper;
 import app.esiroi.auth.endpoint.rest.model.AuthUser;
 import app.esiroi.auth.endpoint.security.AuthProvider;
-import app.esiroi.auth.service.UserService;
+import app.esiroi.auth.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @AllArgsConstructor
 public class AuthenticationController {
-  private final UserService service;
+  private final AuthService service;
   private final UserRestMapper mapper;
 
   @GetMapping("/")
@@ -42,8 +42,8 @@ public class AuthenticationController {
   @PostMapping("/register")
   public String register(@ModelAttribute AuthUser toRegister) {
     var toSave = mapper.toDomain(toRegister);
-    service.saveUser(toSave);
-    return "redirect:/validateOTP";
+    var email = service.saveUser(toSave).getEmail();
+    return "redirect:/qrcode?email=" + email;
   }
 
   @GetMapping("/register")
@@ -55,6 +55,13 @@ public class AuthenticationController {
   @GetMapping("/validateOTP")
   public String validateOTP() {
     return "otp";
+  }
+
+  @GetMapping("/qrcode")
+  public String qrcode(@RequestParam("email") String email, Model model) {
+    var qrCode = service.setupTotp(email);
+    model.addAttribute("qrCode", qrCode);
+    return "qrcode";
   }
 
   @GetMapping("/profile")

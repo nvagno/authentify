@@ -21,8 +21,10 @@ public class TOTPConf {
   private static final int DEFAULT_TOTP_DIGITS = 6;
   private static final int DEFAULT_TOTP_PERIOD = 30; // in seconds
 
-  public String generateTOTP(String secret) {
-    return generateTOTP(secret, DEFAULT_TOTP_DIGITS, DEFAULT_TOTP_PERIOD);
+  public String getTotpUri(String secret, String account, String issuer) {
+    return String.format(
+        "otpauth://totp/%s:%s?secret=%s&issuer=%s&algorithm=SHA1&digits=6&period=30",
+        issuer, account, secret, issuer);
   }
 
   public String generateTOTP(String secret, int digits, int period) {
@@ -57,11 +59,7 @@ public class TOTPConf {
   }
 
   public boolean validateTOTP(String secret, String otp) {
-    return validateTOTP(secret, otp, DEFAULT_TOTP_DIGITS);
-  }
-
-  public boolean validateTOTP(String secret, String otp, int digits) {
-    String expectedOTP = generateTOTP(secret, digits, DEFAULT_TOTP_PERIOD);
+    String expectedOTP = generateTOTP(secret, DEFAULT_TOTP_DIGITS, DEFAULT_TOTP_PERIOD);
     return expectedOTP.equals(otp);
   }
 }

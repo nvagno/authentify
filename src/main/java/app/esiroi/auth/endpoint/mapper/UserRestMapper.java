@@ -5,7 +5,9 @@ import static java.util.UUID.randomUUID;
 import app.esiroi.auth.endpoint.rest.model.AuthUser;
 import app.esiroi.auth.endpoint.rest.model.User;
 import app.esiroi.auth.endpoint.security.Encryptor;
+import java.security.SecureRandom;
 import lombok.AllArgsConstructor;
+import org.apache.commons.codec.binary.Base32;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -26,12 +28,20 @@ public class UserRestMapper {
 
   public app.esiroi.auth.model.User toDomain(AuthUser user) {
     var hashedPass = passwordEncoder.encode(user.getPassword());
-    var encryptedSecret = encryptor.getInstance().encrypt("test".getBytes());
+    var encryptedSecret = encryptor.getInstance().encrypt(generateSecret().getBytes());
     return app.esiroi.auth.model.User.builder()
         .id(randomUUID().toString())
         .email(user.getEmail())
         .passwordHash(hashedPass)
         .otpSecret(encryptedSecret)
         .build();
+  }
+
+  private String generateSecret() {
+    SecureRandom random = new SecureRandom();
+    byte[] bytes = new byte[20]; // 160 bits
+    random.nextBytes(bytes);
+    Base32 base32 = new Base32();
+    return base32.encodeToString(bytes);
   }
 }
