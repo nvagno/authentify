@@ -4,8 +4,8 @@ import static org.springframework.http.HttpMethod.*;
 import static org.springframework.web.cors.CorsConfiguration.ALL;
 
 import java.util.List;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,17 +19,33 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @Configuration
 @Slf4j
 @EnableWebSecurity
-@AllArgsConstructor
 public class SecurityConf {
   private final JWTAuthFilter authFilter;
+
+  private final HandlerExceptionResolver handlerExceptionResolver;
+
+  public SecurityConf(
+      JWTAuthFilter authFilter,
+      @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver) {
+    this.authFilter = authFilter;
+    this.handlerExceptionResolver = handlerExceptionResolver;
+  }
 
   @Bean
   public SecurityFilterChain configure(HttpSecurity http) throws Exception {
     http.cors(corsConf -> corsConf.configurationSource(corsConfigurationSource()))
+        .exceptionHandling(
+            exceptions ->
+                exceptions.authenticationEntryPoint(
+                    (request, response, authException) -> {
+                      handlerExceptionResolver.resolveException(
+                          request, response, null, authException);
+                    }))
         .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
         .authorizeHttpRequests(
             authorize ->
@@ -44,6 +60,8 @@ public class SecurityConf {
                     .permitAll()
                     .requestMatchers(POST, "/login")
                     .permitAll()
+                    .requestMatchers(POST, "/logout")
+                    .permitAll()
                     .requestMatchers(GET, "/register")
                     .permitAll()
                     .requestMatchers(POST, "/register")
@@ -52,9 +70,12 @@ public class SecurityConf {
                     .authenticated()
                     .requestMatchers(POST, "/validateOTP")
                     .authenticated()
+                    .requestMatchers(GET, "/profile")
+                    .authenticated()
                     .anyRequest()
                     .denyAll())
         .formLogin(AbstractHttpConfigurer::disable)
+        .logout(AbstractHttpConfigurer::disable)
         .httpBasic(AbstractHttpConfigurer::disable)
         .csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

@@ -39,6 +39,10 @@ public class UserService {
     throw new ForbiddenException("Bad credentials");
   }
 
+  public User saveUser(User user) {
+    return repository.save(user);
+  }
+
   public User validateOTP(String otp) {
     var email = AuthProvider.getAuthenticatedUserEmail();
     var authUser = getUserByEmail(email);
