@@ -68,4 +68,3 @@ public class SecurityConf {
     return source;
   }
 }
-
