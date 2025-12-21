@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Validate OTP</title>
+    <link rel="stylesheet" th:href="@{/css/index.css}">
+</head>
+<body>
+<div class="card">
+    <h2>Validate OTP</h2>
+
+    <form th:action="@{/validateOTP}" method="post">
+        <input type="number" name="otp" placeholder="OTP" required>
+
+        <button type="submit">Connexion</button>
+    </form>
+
+    <p th:if="${param.error}" class="message error">
+        Invalid OTP
+    </p>
+</div>
+
+</body>
+</html>
