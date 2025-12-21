@@ -12,6 +12,7 @@ paths:
       tags:
         - Health
       summary: Check API health
+      security: []
       operationId: ping
       responses:
         200:
@@ -32,6 +33,7 @@ paths:
       tags:
         - Security
       summary: Authenticate user with username and password
+      security: []
       operationId: authenticateUser
       requestBody:
         content:
@@ -57,7 +59,7 @@ paths:
       tags:
         - Security
       summary: Validate OTP
-      operationId: authenticateUser
+      operationId: validateOTP
       requestBody:
         content:
           text/plain:
@@ -77,6 +79,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Exception'
+
+security:
+  - Bearer: []
 components:
   schemas:
     AuthUser:
