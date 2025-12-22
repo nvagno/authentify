@@ -1,6 +1,5 @@
 package app.esiroi.auth.service;
 
-import static java.time.Instant.now;
 import static java.util.UUID.randomUUID;
 
 import app.esiroi.auth.model.dto.MfaChallenge;
@@ -25,7 +24,7 @@ public class MfaChallengeService {
     c.setChallengeId(randomUUID().toString());
     c.setUserId(userId);
     c.setAttempts(0);
-    c.setCreatedAt(now());
+    // c.setCreatedAt(now()); Not supported for now
 
     redisTemplate.opsForValue().set(key(c.getChallengeId()), c, TTL);
 
