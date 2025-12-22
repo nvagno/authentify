@@ -10,11 +10,19 @@ services:
       - postgres-data:/var/lib/postgresql/data
     restart: always
 
+  redis:
+    image: redis:7
+    container_name: auth-redis
+    ports:
+      - "6379:6379"
+    restart: always
+
   spring-app:
     build: .
     container_name: auth-api
     depends_on:
       - db
+      - redis
     ports:
       - "8080:8080"
     env_file:
