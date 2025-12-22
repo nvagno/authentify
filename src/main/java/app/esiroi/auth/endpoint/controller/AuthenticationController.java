@@ -24,12 +24,13 @@ public class AuthenticationController {
   }
 
   @PostMapping("/login")
-  public String login(@ModelAttribute AuthUser toAuthenticate, HttpServletResponse response) {
-    var user = service.authenticateUser(toAuthenticate);
-    var cookie = putTokenInCookie(user.getAccessToken());
-    response.addCookie(cookie);
-
-    return "redirect:/validateOTP";
+  public String login(@ModelAttribute AuthUser toAuthenticate) {
+    try {
+      var challengeId = service.authenticateUser(toAuthenticate).getChallengeId();
+      return "redirect:/validateOTP?challengeId=" + challengeId;
+    } catch (Exception e) {
+      return "redirect:/";
+    }
   }
 
   @PostMapping("/logout")
@@ -53,7 +54,8 @@ public class AuthenticationController {
   }
 
   @GetMapping("/validateOTP")
-  public String validateOTP() {
+  public String validateOTP(@RequestParam("challengeId") String challengeId, Model model) {
+    model.addAttribute("challengeId", challengeId);
     return "otp";
   }
 
@@ -72,9 +74,14 @@ public class AuthenticationController {
   }
 
   @PostMapping("/validateOTP")
-  public String validate(@RequestParam("otp") String otp) {
+  public String validate(
+      @RequestParam("challengeId") String challengeId,
+      @RequestParam("otp") String otp,
+      HttpServletResponse response) {
     try {
-      service.validateOTP(otp);
+      var user = service.validateOTP(challengeId, otp);
+      var cookie = putTokenInCookie(user.getAccessToken());
+      response.addCookie(cookie);
       return "redirect:/profile";
     } catch (Exception e) {
       return "redirect:/validateOTP";

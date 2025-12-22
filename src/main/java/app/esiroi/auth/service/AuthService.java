@@ -1,11 +1,11 @@
 package app.esiroi.auth.service;
 
 import app.esiroi.auth.endpoint.rest.model.AuthUser;
-import app.esiroi.auth.endpoint.security.AuthProvider;
 import app.esiroi.auth.endpoint.security.Encryptor;
 import app.esiroi.auth.endpoint.security.JWTConf;
 import app.esiroi.auth.endpoint.security.TOTPConf;
 import app.esiroi.auth.model.User;
+import app.esiroi.auth.model.dto.MfaChallenge;
 import app.esiroi.auth.model.exception.ForbiddenException;
 import app.esiroi.auth.model.exception.NotFoundException;
 import app.esiroi.auth.repository.UserRepository;
@@ -30,6 +30,7 @@ public class AuthService {
   private final JWTConf jwtConf;
   private final TOTPConf totpConf;
   private final Encryptor encryptor;
+  private final MfaChallengeService mfaService;
 
   public User getUserByEmail(String email) {
     return repository
@@ -37,11 +38,17 @@ public class AuthService {
         .orElseThrow(() -> new NotFoundException("User.email=" + email + " not found"));
   }
 
-  public User authenticateUser(AuthUser toAuthenticate) {
+  public User getUserById(String id) {
+    return repository
+        .findById(id)
+        .orElseThrow(() -> new NotFoundException("User.id=" + id + " not found"));
+  }
+
+  public MfaChallenge authenticateUser(AuthUser toAuthenticate) {
     var user = getUserByEmail(toAuthenticate.getEmail());
     if (encoder.matches(toAuthenticate.getPassword(), user.getPasswordHash())) {
-      user.setAccessToken(jwtConf.generateToken(user.getEmail()));
-      return user;
+      var userId = user.getId();
+      return mfaService.create(userId);
     }
     throw new ForbiddenException("Bad credentials");
   }
@@ -50,9 +57,12 @@ public class AuthService {
     return repository.save(user);
   }
 
-  public User validateOTP(String otp) {
-    var email = AuthProvider.getAuthenticatedUserEmail();
-    var authUser = getUserByEmail(email);
+  public User validateOTP(String challengeId, String otp) {
+    var mfa =
+        mfaService
+            .get(challengeId)
+            .orElseThrow(() -> new NotFoundException("MFA challenge not found"));
+    var authUser = getUserById(mfa.getUserId());
 
     var encryptedSecret = authUser.getOtpSecret();
     var decryptedSecret = new String(encryptor.getInstance().decrypt(encryptedSecret));
@@ -60,7 +70,9 @@ public class AuthService {
     var isOTPValid = totpConf.validateTOTP(decryptedSecret, otp);
     if (isOTPValid) {
       authUser.setOtpValidationRequired(false);
-      return repository.save(authUser);
+      var saved = repository.save(authUser);
+      saved.setAccessToken(jwtConf.generateToken(authUser.getEmail()));
+      return saved;
     }
     throw new ForbiddenException("OTP Invalid");
   }
