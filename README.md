@@ -1,6 +1,6 @@
 # Secure Authentication Service
 
-**Spring Boot · JWT · TOTP · PostgreSQL · Docker · Thymeleaf**
+**Spring Boot · JWT · TOTP · PostgreSQL · Redis · Docker · Thymeleaf**
 
 ## Overview
 
@@ -29,6 +29,11 @@ It provides:
     * Compatible with Google Authenticator and similar apps
     * One-time codes validated server-side
 
+* **Redis Integration**
+
+    * Stores temporary TOTP challenge IDs and secrets
+    * TTL-based automatic expiration
+
 * **PostgreSQL**
 
     * Supports PostgreSQL **version 15 or earlier**
@@ -53,24 +58,26 @@ It provides:
 
 ## Technology Stack
 
-| Layer             | Technology                             |
-| ----------------- | -------------------------------------- |
-| Backend           | Spring Boot                            |
-| Security          | Spring Security, JWT                   |
-| 2FA               | TOTP (Google Authenticator compatible) |
-| Database          | PostgreSQL (≤ 15)                      |
-| UI                | Thymeleaf                              |
-| API Specification | OpenAPI 3                              |
-| Build Tool        | Gradle                                 |
-| Containerization  | Docker, Docker Compose                 |
+| Layer                   | Technology                             |
+| ----------------------- | -------------------------------------- |
+| Backend                 | Spring Boot                            |
+| Security                | Spring Security, JWT                   |
+| 2FA                     | TOTP (Google Authenticator compatible) |
+| Database                | PostgreSQL (≤ 15)                      |
+| Cache/Temporary Storage | Redis                                  |
+| UI                      | Thymeleaf                              |
+| API Specification       | OpenAPI 3                              |
+| Build Tool              | Gradle                                 |
+| Containerization        | Docker, Docker Compose                 |
 
 ---
 
 ## Authentication Flow (High Level)
 
-1. User logs in with username/password
+1. User logs in with email/password
 2. If TOTP is enabled:
 
+    * Server creates a temporary `challengeId` stored in Redis
     * User must provide a valid one-time code
 3. On success:
 
@@ -81,35 +88,55 @@ It provides:
 
 ## TOTP Enrollment Flow
 
-1. User requests TOTP enrollment
+1. User requests TOTP enrollment via `/qrcode`
 2. Server generates:
 
-    * Shared secret
+    * A shared secret
     * QR code
+    * Challenge ID stored in Redis with TTL
 3. User scans QR code using Google Authenticator
-4. User submits a generated TOTP code for verification
+4. User submits a generated TOTP code via `/validateOTP` for verification
 5. TOTP is activated for the account
 
 ---
 
-## Sequence Diagram (TOTP Authentication)
+## Sequence Diagram (TOTP Authentication with Redis)
 
 ```mermaid
 sequenceDiagram
     participant User
     participant UI (Thymeleaf)
     participant Auth API
+    participant Redis
     participant Database
 
-    User->>UI (Thymeleaf): Login (username/password)
-    UI->>Auth API: POST /auth/login
-    Auth API->>Database: Validate credentials
-    Auth API-->>UI (Thymeleaf): TOTP required
+    User->>UI: Register (/register)
+    UI->>Auth API: POST /register
+    Auth API->>Database: Create user
+    Auth API-->>UI: Registration success
 
-    User->>UI (Thymeleaf): Enter TOTP code
-    UI->>Auth API: POST /auth/totp/verify
-    Auth API->>Database: Validate TOTP secret
-    Auth API-->>UI (Thymeleaf): JWT issued
+    User->>UI: Request QR code (/qrcode)
+    UI->>Auth API: GET /qrcode
+    Auth API->>Redis: Store challengeId + secret
+    Auth API-->>UI: Return QR code + challengeId
+    User->>Google Authenticator: Scan QR code
+
+    User->>UI: Login (/login)
+    UI->>Auth API: POST /login (email + password)
+    Auth API->>Database: Validate credentials
+    Auth API->>Redis: Create challengeId for TOTP
+    Auth API-->>UI: TOTP required + challengeId
+
+    User->>UI: Enter OTP (/validateOTP)
+    UI->>Auth API: POST /validateOTP (challengeId + OTP)
+    Auth API->>Redis: Retrieve secret
+    Auth API->>Redis: Delete challengeId if valid
+    Auth API-->>UI: JWT issued
+
+    User->>UI: Access profile (/profile)
+    UI->>Auth API: JWT in Authorization header
+    Auth API->>Database: Validate JWT
+    Auth API-->>UI: Return profile data
 ```
 
 ---
@@ -132,7 +159,7 @@ sequenceDiagram
    cp env.template .env
    ```
 
-2. Update values as needed (database credentials, JWT secrets, etc.).
+2. Update values as needed (database credentials, Redis credentials, JWT secrets, etc.).
 
 > **Note:** All sensitive configuration is managed via environment variables.
 
@@ -147,6 +174,7 @@ docker compose up -d
 This will start:
 
 * PostgreSQL
+* Redis
 * The Spring Boot application
 
 ---
@@ -197,8 +225,9 @@ This ensures:
 
     * JWT validation
     * TOTP enrollment and verification
+    * Redis challenge handling
     * Authentication edge cases (expired tokens, invalid codes)
-* Consider Testcontainers for PostgreSQL integration tests
+* Consider Testcontainers for PostgreSQL and Redis integration tests
 
 ---
 
@@ -225,6 +254,6 @@ This ensures:
 ## Security Notes
 
 * JWT secrets must be strong and never committed
-* TOTP secrets are stored securely and never exposed
+* TOTP secrets are stored securely and only temporarily in Redis during validation
 * HTTPS is strongly recommended for production
 * Consider rate-limiting authentication endpoints
