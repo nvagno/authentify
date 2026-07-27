@@ -2,28 +2,20 @@ package app.esiroi.auth.endpoint.controller;
 
 import app.esiroi.auth.endpoint.mapper.UserRestMapper;
 import app.esiroi.auth.endpoint.rest.model.AuthUser;
-import app.esiroi.auth.endpoint.security.AuthProvider;
 import app.esiroi.auth.service.AuthService;
-import jakarta.servlet.http.Cookie;
+import app.esiroi.auth.service.CookieService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
 @AllArgsConstructor
-@Slf4j
 public class AuthenticationController {
   private final AuthService service;
   private final UserRestMapper mapper;
-
-  @GetMapping("/")
-  public String index(Model model) {
-    model.addAttribute("user", new AuthUser());
-    return "index";
-  }
+  private final CookieService cookieService;
 
   @PostMapping("/login")
   public String login(@ModelAttribute AuthUser toAuthenticate) {
@@ -37,7 +29,7 @@ public class AuthenticationController {
 
   @PostMapping("/logout")
   public String logout(HttpServletResponse response) {
-    var cookie = clearInCookie();
+    var cookie = cookieService.clearInCookie();
     response.addCookie(cookie);
     return "redirect:/";
   }
@@ -53,58 +45,5 @@ public class AuthenticationController {
   public String registerPage(Model model) {
     model.addAttribute("user", new AuthUser());
     return "register";
-  }
-
-  @GetMapping("/validateOTP")
-  public String validateOTP(@RequestParam("challengeId") String challengeId, Model model) {
-    model.addAttribute("challengeId", challengeId);
-    return "otp";
-  }
-
-  @GetMapping("/qrcode")
-  public String qrcode(@RequestParam("email") String email, Model model) {
-    var qrCode = service.setupTotp(email);
-    model.addAttribute("qrCode", qrCode);
-    return "qrcode";
-  }
-
-  @GetMapping("/profile")
-  public String profile(Model model) {
-    var email = AuthProvider.getAuthenticatedUserEmail();
-    model.addAttribute("email", email);
-    return "profile";
-  }
-
-  @PostMapping("/validateOTP")
-  public String validate(
-      @RequestParam("challengeId") String challengeId,
-      @RequestParam("otp") String otp,
-      HttpServletResponse response) {
-    try {
-
-      var user = service.validateOTP(challengeId, otp);
-      var cookie = putTokenInCookie(user.getAccessToken());
-      response.addCookie(cookie);
-      return "redirect:/profile";
-    } catch (Exception e) {
-      log.error(e.getMessage());
-      return "redirect:/validateOTP?challengeId=" + challengeId;
-    }
-  }
-
-  private Cookie putTokenInCookie(String token) {
-    Cookie cookie = new Cookie("AUTH-TOKEN", token);
-    cookie.setHttpOnly(true);
-    cookie.setPath("/");
-
-    return cookie;
-  }
-
-  private Cookie clearInCookie() {
-    Cookie cookie = new Cookie("AUTH-TOKEN", null);
-    cookie.setHttpOnly(true);
-    cookie.setPath("/");
-    cookie.setMaxAge(0);
-    return cookie;
   }
 }

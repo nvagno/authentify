@@ -16,6 +16,6 @@ class HealthControllerIT extends ITestConfiguration {
 
     var actual = api.ping();
 
-    assertEquals("pong", actual);
+    assertEquals("<h1>pong</h1>", actual);
   }
 }
