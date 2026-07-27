@@ -1,16 +1,19 @@
 package app.esiroi.auth.integration.service;
 
+import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import app.esiroi.auth.ITestConfiguration;
 import app.esiroi.auth.model.User;
+import app.esiroi.auth.model.exception.NotFoundException;
 import app.esiroi.auth.repository.UserRepository;
 import app.esiroi.auth.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class AuthServiceIT extends ITestConfiguration {
+class AuthServiceIT extends ITestConfiguration {
   @Autowired UserRepository userRepository;
   @Autowired AuthService subject;
 
@@ -20,13 +23,30 @@ public class AuthServiceIT extends ITestConfiguration {
   }
 
   @Test
-  void get_user_by_email_and_passhash_ok() {
+  void get_user_by_email() {
     var email = "test@email.com";
 
     var actual = subject.getUserByEmail(email);
     actual.setCreatedAt(null);
 
     assertEquals(expected(), actual);
+  }
+
+  @Test
+  void get_user_by_id_ok() {
+    var id = expected().getId();
+
+    var actual = subject.getUserById(id);
+    actual.setCreatedAt(null);
+
+    assertEquals(expected(), actual);
+  }
+
+  @Test
+  void get_user_by_id_ko() {
+    var id = randomUUID().toString();
+
+    assertThrows(NotFoundException.class, () -> subject.getUserById(id));
   }
 
   private User expected() {

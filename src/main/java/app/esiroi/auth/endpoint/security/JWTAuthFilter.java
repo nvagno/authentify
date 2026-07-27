@@ -32,7 +32,6 @@ public class JWTAuthFilter extends OncePerRequestFilter {
               .map(Cookie::getValue)
               .findFirst()
               .orElse(null);
-      ;
 
       if (jwtConf.validateToken(token)) {
         String email = jwtConf.extractEmail(token);

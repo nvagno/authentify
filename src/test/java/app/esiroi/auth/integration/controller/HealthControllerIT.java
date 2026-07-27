@@ -8,7 +8,7 @@ import app.esiroi.auth.endpoint.rest.client.ApiClient;
 import app.esiroi.auth.endpoint.rest.client.ApiException;
 import org.junit.jupiter.api.Test;
 
-public class HealthControllerIT extends ITestConfiguration {
+class HealthControllerIT extends ITestConfiguration {
   @Test
   void health_test_ok() throws ApiException {
     ApiClient apiClient = anApiClient(serverPort);
