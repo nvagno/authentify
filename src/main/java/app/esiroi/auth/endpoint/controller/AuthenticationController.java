@@ -7,12 +7,14 @@ import app.esiroi.auth.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
 @AllArgsConstructor
+@Slf4j
 public class AuthenticationController {
   private final AuthService service;
   private final UserRestMapper mapper;
@@ -79,12 +81,14 @@ public class AuthenticationController {
       @RequestParam("otp") String otp,
       HttpServletResponse response) {
     try {
+
       var user = service.validateOTP(challengeId, otp);
       var cookie = putTokenInCookie(user.getAccessToken());
       response.addCookie(cookie);
       return "redirect:/profile";
     } catch (Exception e) {
-      return "redirect:/validateOTP";
+      log.error(e.getMessage());
+      return "redirect:/validateOTP?challengeId=" + challengeId;
     }
   }
 
