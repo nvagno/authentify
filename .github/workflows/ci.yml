@@ -9,6 +9,11 @@ on:
       - '*'
   workflow_dispatch:
 
+
+env:
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -24,6 +29,15 @@ jobs:
       - run: chmod +x gradlew
       - run: chmod +x .shell/publish_gen_to_maven_local.sh
       - run: ./gradlew test
+
+      - name: Code quality and coverage analysis
+        run: |
+          ./gradlew sonar --stacktrace \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.organization=${{ vars.SONAR_ORG }} \
+          -Dsonar.projectKey=${{ vars.SONAR_PJ_KEY }} \
+          -Dsonar.projectName=${{ vars.SONAR_PJ_NAME }} \
+          -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml
 
   format:
     runs-on: ubuntu-latest
