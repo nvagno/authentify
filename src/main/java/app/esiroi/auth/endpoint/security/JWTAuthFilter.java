@@ -27,13 +27,13 @@ public class JWTAuthFilter extends OncePerRequestFilter {
     var cookies = request.getCookies();
     if (cookies != null) {
       String token =
-          Arrays.stream(request.getCookies())
+          Arrays.stream(cookies)
               .filter(cookie -> "AUTH-TOKEN".equals(cookie.getName()))
               .map(Cookie::getValue)
               .findFirst()
               .orElse(null);
 
-      if (jwtConf.validateToken(token)) {
+      if (token != null && jwtConf.validateToken(token)) {
         String email = jwtConf.extractEmail(token);
 
         UsernamePasswordAuthenticationToken auth =

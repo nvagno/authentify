@@ -28,7 +28,7 @@ public class AuthenticationController {
     }
   }
 
-  @PostMapping("/logout")
+  @PostMapping("/")
   public String logout(HttpServletRequest request, HttpServletResponse response) {
     var cookie = cookieService.clearInCookie(request);
     response.addCookie(cookie);

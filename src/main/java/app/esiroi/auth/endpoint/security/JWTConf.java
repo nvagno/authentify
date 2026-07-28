@@ -34,10 +34,13 @@ public class JWTConf {
   }
 
   public boolean validateToken(String token) {
+    if (token == null || token.isBlank()) {
+      return false;
+    }
     try {
       getClaims(token);
       return true;
-    } catch (JwtException e) {
+    } catch (JwtException | IllegalArgumentException e) {
       return false;
     }
   }

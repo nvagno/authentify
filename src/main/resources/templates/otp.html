@@ -10,6 +10,7 @@
     <h2>Validate OTP</h2>
 
     <form th:action="@{/validateOTP}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
         <input type="hidden" name="challengeId" th:value="${challengeId}">
         <input type="number" name="otp" placeholder="OTP" required>
 
