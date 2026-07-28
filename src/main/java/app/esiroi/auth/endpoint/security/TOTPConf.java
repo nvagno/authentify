@@ -8,6 +8,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.SneakyThrows;
 import org.apache.commons.codec.binary.Base32;
+import org.flywaydb.core.internal.util.StringUtils;
 import org.springframework.stereotype.Component;
 
 /**
@@ -51,7 +52,7 @@ public class TOTPConf {
               | (hash[offset + 3] & 0xFF);
 
       int otp = binary % (int) Math.pow(10, digits);
-      return String.format("%0" + digits + "d", otp);
+      return StringUtils.leftPad(String.valueOf(otp), digits, '0');
 
     } catch (NoSuchAlgorithmException | InvalidKeyException e) {
       throw new ApiException(e.getMessage(), ApiException.ExceptionType.SERVER_EXCEPTION);

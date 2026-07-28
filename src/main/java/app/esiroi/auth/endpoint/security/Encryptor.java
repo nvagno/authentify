@@ -7,15 +7,15 @@ import org.springframework.security.crypto.encrypt.Encryptors;
 
 @Configuration
 public class Encryptor {
-  private final BytesEncryptor encryptor;
+  private final BytesEncryptor bytesEncryptor;
 
   public Encryptor(
       @Value("${crypto.secret.key}") String cryptoSecretKey,
       @Value("${crypto.salt}") String cryptoSalt) {
-    this.encryptor = Encryptors.standard(cryptoSecretKey, cryptoSalt);
+    this.bytesEncryptor = Encryptors.standard(cryptoSecretKey, cryptoSalt);
   }
 
   public BytesEncryptor getInstance() {
-    return encryptor;
+    return bytesEncryptor;
   }
 }

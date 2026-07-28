@@ -6,19 +6,25 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class JWTConf {
+
+  private static final Duration JWT_EXPIRATION = Duration.ofHours(1);
+
   private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
   public String generateToken(String email) {
-    long jwtExpiration = 3600000; // 1 hour
+    Instant now = Instant.now();
+
     return Jwts.builder()
         .setSubject(email)
-        .setIssuedAt(new Date())
-        .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+        .setIssuedAt(Date.from(now))
+        .setExpiration(Date.from(now.plus(JWT_EXPIRATION)))
         .signWith(key)
         .compact();
   }

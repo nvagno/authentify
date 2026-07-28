@@ -4,6 +4,7 @@ import app.esiroi.auth.endpoint.mapper.UserRestMapper;
 import app.esiroi.auth.endpoint.rest.model.AuthUser;
 import app.esiroi.auth.service.AuthService;
 import app.esiroi.auth.service.CookieService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -28,8 +29,8 @@ public class AuthenticationController {
   }
 
   @PostMapping("/logout")
-  public String logout(HttpServletResponse response) {
-    var cookie = cookieService.clearInCookie();
+  public String logout(HttpServletRequest request, HttpServletResponse response) {
+    var cookie = cookieService.clearInCookie(request);
     response.addCookie(cookie);
     return "redirect:/";
   }

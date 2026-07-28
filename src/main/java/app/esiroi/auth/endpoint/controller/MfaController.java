@@ -3,6 +3,7 @@ package app.esiroi.auth.endpoint.controller;
 import app.esiroi.auth.endpoint.security.AuthProvider;
 import app.esiroi.auth.service.AuthService;
 import app.esiroi.auth.service.CookieService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,11 +44,12 @@ public class MfaController {
   public String validate(
       @RequestParam("challengeId") String challengeId,
       @RequestParam("otp") String otp,
+      HttpServletRequest request,
       HttpServletResponse response) {
     try {
 
       var user = service.validateOTP(challengeId, otp);
-      var cookie = cookieService.putTokenInCookie(user.getAccessToken());
+      var cookie = cookieService.putTokenInCookie(user.getAccessToken(), request);
       response.addCookie(cookie);
       return "redirect:/profile";
     } catch (Exception e) {

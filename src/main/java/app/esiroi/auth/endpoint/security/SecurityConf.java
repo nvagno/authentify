@@ -1,9 +1,7 @@
 package app.esiroi.auth.endpoint.security;
 
 import static org.springframework.http.HttpMethod.*;
-import static org.springframework.web.cors.CorsConfiguration.ALL;
 
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -16,9 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @Configuration
@@ -38,14 +33,12 @@ public class SecurityConf {
 
   @Bean
   public SecurityFilterChain configure(HttpSecurity http) throws Exception {
-    http.cors(corsConf -> corsConf.configurationSource(corsConfigurationSource()))
-        .exceptionHandling(
+    http.exceptionHandling(
             exceptions ->
                 exceptions.authenticationEntryPoint(
-                    (request, response, authException) -> {
-                      handlerExceptionResolver.resolveException(
-                          request, response, null, authException);
-                    }))
+                    (request, response, authException) ->
+                        handlerExceptionResolver.resolveException(
+                            request, response, null, authException)))
         .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
         .authorizeHttpRequests(
             authorize ->
@@ -88,16 +81,5 @@ public class SecurityConf {
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
-  }
-
-  public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration config = new CorsConfiguration();
-    config.setAllowedOrigins(List.of(ALL));
-    config.setAllowedMethods(List.of(ALL));
-    config.setAllowedHeaders(List.of(ALL));
-
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", config);
-    return source;
   }
 }

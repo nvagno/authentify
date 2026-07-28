@@ -5,6 +5,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AuthProvider {
+
+  private AuthProvider() {}
+
   public static String getAuthenticatedUserEmail() {
     return (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
   }
