@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
-public class InternalToRestException {
+public class InternalToRestExceptionHandler {
 
   @ExceptionHandler(value = {BadRequestException.class, IllegalArgumentException.class})
   public ResponseEntity<app.esiroi.auth.endpoint.rest.model.Exception> handleBadRequestException(
