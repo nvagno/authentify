@@ -1,7 +1,7 @@
 package app.esiroi.auth.integration.controller;
 
 import static app.esiroi.auth.TestData.challenge;
-import static app.esiroi.auth.TestData.expected;
+import static app.esiroi.auth.TestData.user;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import app.esiroi.auth.ITestConfiguration;
+import app.esiroi.auth.TestConfigurer;
 import app.esiroi.auth.model.User;
 import app.esiroi.auth.service.AuthService;
 import app.esiroi.auth.service.CookieService;
@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-class MfaControllerIT extends ITestConfiguration {
+class MfaControllerIT extends TestConfigurer {
   @Autowired private MockMvc mockMvc;
 
   @MockBean private AuthService service;
@@ -39,7 +39,7 @@ class MfaControllerIT extends ITestConfiguration {
 
   @Test
   void display_qrcode_page() throws Exception {
-    var userEmail = expected().getEmail();
+    var userEmail = user().getEmail();
     var qrCodeValue = "qr-code-value";
 
     when(service.setupTotp(userEmail)).thenReturn(qrCodeValue);

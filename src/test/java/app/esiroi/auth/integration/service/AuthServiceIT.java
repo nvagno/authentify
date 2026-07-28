@@ -1,13 +1,13 @@
 package app.esiroi.auth.integration.service;
 
 import static app.esiroi.auth.TestData.challenge;
-import static app.esiroi.auth.TestData.expected;
+import static app.esiroi.auth.TestData.user;
 import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-import app.esiroi.auth.ITestConfiguration;
+import app.esiroi.auth.TestConfigurer;
 import app.esiroi.auth.endpoint.rest.model.AuthUser;
 import app.esiroi.auth.endpoint.security.TOTPConf;
 import app.esiroi.auth.model.exception.ForbiddenException;
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-class AuthServiceIT extends ITestConfiguration {
+class AuthServiceIT extends TestConfigurer {
   @Autowired UserRepository userRepository;
   @Autowired AuthService subject;
   @MockBean MfaChallengeService mfaChallengeService;
@@ -29,7 +29,7 @@ class AuthServiceIT extends ITestConfiguration {
 
   @BeforeEach
   void setUp() {
-    userRepository.save(expected());
+    userRepository.save(user());
     when(mfaChallengeService.create(anyString())).thenReturn(challenge());
     when(mfaChallengeService.get(anyString())).thenReturn(Optional.of(challenge()));
     when(totpConf.validateTOTP(anyString(), anyString())).thenReturn(true);
@@ -42,17 +42,17 @@ class AuthServiceIT extends ITestConfiguration {
     var actual = subject.getUserByEmail(email);
     actual.setCreatedAt(null);
 
-    assertEquals(expected(), actual);
+    assertEquals(user(), actual);
   }
 
   @Test
   void get_user_by_id_ok() {
-    var id = expected().getId();
+    var id = user().getId();
 
     var actual = subject.getUserById(id);
     actual.setCreatedAt(null);
 
-    assertEquals(expected(), actual);
+    assertEquals(user(), actual);
   }
 
   @Test
@@ -64,7 +64,7 @@ class AuthServiceIT extends ITestConfiguration {
 
   @Test
   void authenticate_user_ok() {
-    var toAuthenticate = new AuthUser().email(expected().getEmail()).password("test");
+    var toAuthenticate = new AuthUser().email(user().getEmail()).password("test");
 
     var actual = subject.authenticateUser(toAuthenticate);
 
@@ -73,7 +73,7 @@ class AuthServiceIT extends ITestConfiguration {
 
   @Test
   void authenticate_user_ko() {
-    var toAuthenticate = new AuthUser().email(expected().getEmail()).password("wrongpassword");
+    var toAuthenticate = new AuthUser().email(user().getEmail()).password("wrongpassword");
 
     assertThrows(ForbiddenException.class, () -> subject.authenticateUser(toAuthenticate));
   }

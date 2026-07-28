@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import app.esiroi.auth.ITestConfiguration;
+import app.esiroi.auth.TestConfigurer;
 import app.esiroi.auth.endpoint.mapper.UserRestMapper;
 import app.esiroi.auth.endpoint.rest.model.AuthUser;
 import app.esiroi.auth.model.User;
@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-class AuthenticationControllerIT extends ITestConfiguration {
+class AuthenticationControllerIT extends TestConfigurer {
   @Autowired private MockMvc mockMvc;
 
   @MockBean private AuthService service;

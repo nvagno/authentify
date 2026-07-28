@@ -5,7 +5,7 @@ import app.esiroi.auth.model.dto.MfaChallenge;
 
 public class TestData {
 
-  public static User expected() {
+  public static User user() {
     return User.builder()
         .id("user1_id")
         .email("test@email.com")
@@ -15,6 +15,15 @@ public class TestData {
   }
 
   public static MfaChallenge challenge() {
-    return new MfaChallenge("challengeId", expected().getId(), 1, null);
+    return new MfaChallenge("challengeId", user().getId(), 1, null);
+  }
+
+  public static app.esiroi.auth.endpoint.rest.model.User restUser() {
+    return new app.esiroi.auth.endpoint.rest.model.User()
+        .id("user1_id")
+        .email("test@email.com")
+        .accessToken(null)
+        .createdAt(null)
+        .otpValidationRequired(false);
   }
 }

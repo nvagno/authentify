@@ -7,7 +7,6 @@ import javax.sql.DataSource;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -15,7 +14,7 @@ import org.springframework.test.context.DynamicPropertySource;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @AutoConfigureMockMvc
-public class ITestConfiguration {
+public class TestConfigurer {
   @LocalServerPort protected int serverPort;
 
   public static ApiClient anApiClient(int serverPort) {
@@ -34,7 +33,7 @@ public class ITestConfiguration {
     registry.add("spring.flyway.locations", () -> "classpath:db/migration");
   }
 
-  @TestConfiguration
+  @org.springframework.boot.test.context.TestConfiguration
   static class TestConfig {
     @Bean
     public DataSource dataSource() {
