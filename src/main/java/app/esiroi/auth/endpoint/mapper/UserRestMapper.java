@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 public class UserRestMapper {
   private final PasswordEncoder passwordEncoder;
   private final Encryptor encryptor;
+  private static final SecureRandom secureRandom = new SecureRandom();
 
   public User toRest(app.esiroi.auth.model.User user) {
     return new User()
@@ -38,9 +39,8 @@ public class UserRestMapper {
   }
 
   private String generateSecret() {
-    SecureRandom random = new SecureRandom();
     byte[] bytes = new byte[20]; // 160 bits
-    random.nextBytes(bytes);
+    secureRandom.nextBytes(bytes);
     Base32 base32 = new Base32();
     return base32.encodeToString(bytes);
   }
