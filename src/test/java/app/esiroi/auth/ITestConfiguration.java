@@ -5,6 +5,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 import app.esiroi.auth.endpoint.rest.client.ApiClient;
 import javax.sql.DataSource;
 import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -13,6 +14,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
+@AutoConfigureMockMvc
 public class ITestConfiguration {
   @LocalServerPort protected int serverPort;
 

@@ -1,5 +1,7 @@
 package app.esiroi.auth.integration.service;
 
+import static app.esiroi.auth.TestData.challenge;
+import static app.esiroi.auth.TestData.expected;
 import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -8,8 +10,6 @@ import static org.mockito.Mockito.when;
 import app.esiroi.auth.ITestConfiguration;
 import app.esiroi.auth.endpoint.rest.model.AuthUser;
 import app.esiroi.auth.endpoint.security.TOTPConf;
-import app.esiroi.auth.model.User;
-import app.esiroi.auth.model.dto.MfaChallenge;
 import app.esiroi.auth.model.exception.ForbiddenException;
 import app.esiroi.auth.model.exception.NotFoundException;
 import app.esiroi.auth.repository.UserRepository;
@@ -85,18 +85,5 @@ class AuthServiceIT extends ITestConfiguration {
     var actual = subject.validateOTP(challenge().getChallengeId(), otp);
 
     assertNotNull(actual.getAccessToken());
-  }
-
-  private User expected() {
-    return User.builder()
-        .id("user1_id")
-        .email("test@email.com")
-        .passwordHash("$2a$12$7EAKNtczSkndY4JHkdW9XeLTD3akaoi4Uqmk8wrqfxZF7of8F4kom")
-        .otpSecret("*".repeat(16).getBytes())
-        .build();
-  }
-
-  private MfaChallenge challenge() {
-    return new MfaChallenge("challengeId", expected().getId(), 1, null);
   }
 }
